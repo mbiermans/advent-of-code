@@ -8,18 +8,16 @@ object Day01 extends App {
   def measurements(depths: List[Int]): Int = {
 
     val list: List[Int] = depths match {
-      case head :: rest =>
+      case head :: rest => {
         rest
           .foldLeft(head -> List.empty[Int]) { case ((previous, increases), next) =>
             ((next, compare(previous, next) :: increases))
           }
           ._2
+      }
       case Nil => List.empty
-
     }
-
     list.sum
-
   }
 
   def compare(previous: Int, next: Int) = {
