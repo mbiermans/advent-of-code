@@ -7,8 +7,6 @@ object Day02 extends App {
 
   val inputs = Source.fromResource("Day02.txt").getLines.toList
 
-  println(inputs)
-
   val regex = "(\\w+) ([\\d]+)".r
 
   def extractCoordinates(text: String): Coordinates = {
@@ -32,10 +30,8 @@ object Day02 extends App {
     case Nil          => Coordinates(0, 0, 0)
   }
 
-  println(endCoordinates)
   println(endCoordinates.horizontal * endCoordinates.vertical)
 
-  println(endCoordinates2)
   println(endCoordinates2.horizontal * endCoordinates2.vertical)
 
   case class Coordinates(horizontal: Int, vertical: Int, aim: Int) {
