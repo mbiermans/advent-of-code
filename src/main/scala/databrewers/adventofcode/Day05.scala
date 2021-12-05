@@ -7,34 +7,18 @@ import scala.util.matching.Regex
 
 object Day05 extends App {
 
-  val inputs: List[String] = Source.fromResource("Day05.txt").getLines().filter(_.nonEmpty).toList
+  case class Coordinates(x: Int, y: Int) {
 
-  val coordsR = "(\\d+),(\\d+) -> (\\d+),(\\d+)".r
+    def swap: Coordinates = Coordinates(y, x)
 
-  def horizontal(fixed: Int, beginning: Int, end: Int): Seq[(Int, Int)] = {
+  }
+
+  def horizontal(fixed: Int, beginning: Int, end: Int): Seq[Coordinates] = {
     val byNum = if (beginning > end) -1 else 1
     for {
       num <- beginning to end by byNum
-    } yield (fixed -> num)
+    } yield Coordinates(fixed, num)
   }
-
-  val coordinates = inputs.map { line =>
-    line match {
-      case coordsR(x1, y1, x2, y2) => Coordinates(x1.toInt, y1.toInt) -> Coordinates(x2.toInt, y2.toInt)
-    }
-  }
-
-  val horizontals: List[Coordinates] = coordinates
-    .foldLeft(List.empty[(Int, Int)]) {
-      case (accum, (left, right)) if (left.x == right.x) => horizontal(left.x, left.y, right.y).toList ++ accum
-      case (accum, (left, right)) if (left.y == right.y) =>
-        horizontal(left.y, left.x, right.x).map(_.swap).toList ++ accum
-      case (accum, _) => accum
-    }
-    .map { case (x, y) => Coordinates(x, y) }
-
-  val result1 = horizontals.groupBy(identity).filter { case (keys, values) => values.size >= 2 }.keys.size
-  println(result1)
 
   def diagonal(start: Coordinates, end: Coordinates): List[Coordinates] = {
     val diagonals = {
@@ -58,6 +42,27 @@ object Day05 extends App {
     }
   }
 
+  val inputs: List[String] = Source.fromResource("Day05.txt").getLines().filter(_.nonEmpty).toList
+
+  val coordsR = "(\\d+),(\\d+) -> (\\d+),(\\d+)".r
+
+  val coordinates = inputs.map { line =>
+    line match {
+      case coordsR(x1, y1, x2, y2) => Coordinates(x1.toInt, y1.toInt) -> Coordinates(x2.toInt, y2.toInt)
+    }
+  }
+
+  val horizontals: List[Coordinates] = coordinates
+    .foldLeft(List.empty[Coordinates]) {
+      case (accum, (left, right)) if (left.x == right.x) => horizontal(left.x, left.y, right.y).toList ++ accum
+      case (accum, (left, right)) if (left.y == right.y) =>
+        horizontal(left.y, left.x, right.x).toList.map(_.swap) ++ accum
+      case (accum, _) => accum
+    }
+
+  val result1 = horizontals.groupBy(identity).filter { case (keys, values) => values.size >= 2 }.keys.size
+  println(result1)
+
   val diagonals = coordinates.flatMap {
     case (left, right) if left.x < right.x => diagonal(left, right)
     case (left, right)                     => diagonal(right, left)
@@ -70,7 +75,5 @@ object Day05 extends App {
     .size
 
   println(result2)
-
-  case class Coordinates(x: Int, y: Int)
 
 }
