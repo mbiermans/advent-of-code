@@ -9,15 +9,13 @@ object Day02 extends App {
 
   println(inputs)
 
-
   val regex = "(\\w+) ([\\d]+)".r
-
 
   def extractCoordinates(text: String): Coordinates = {
     text match {
-        case regex(action, amount) if action == "forward" => Coordinates(amount.toInt, 0, 0)
-        case regex(action, amount) if action == "up" => Coordinates(0, amount.toInt * -1, 0)
-        case regex(action, amount) if action == "down" => Coordinates(0, amount.toInt, 0)
+      case regex(action, amount) if action == "forward" => Coordinates(amount.toInt, 0, 0)
+      case regex(action, amount) if action == "up"      => Coordinates(0, amount.toInt * -1, 0)
+      case regex(action, amount) if action == "down"    => Coordinates(0, amount.toInt, 0)
     }
   }
 
@@ -25,13 +23,13 @@ object Day02 extends App {
     .map(extractCoordinates)
 
   val endCoordinates = coordinates match {
-      case head :: rest => rest.foldLeft(head)(_ ++ _)
-      case Nil => Coordinates(0, 0, 0)
+    case head :: rest => rest.foldLeft(head)(_ ++ _)
+    case Nil          => Coordinates(0, 0, 0)
   }
 
   val endCoordinates2 = coordinates match {
-      case head :: rest => rest.foldLeft(head)(_ ** _)
-      case Nil => Coordinates(0, 0, 0)
+    case head :: rest => rest.foldLeft(head)(_ ** _)
+    case Nil          => Coordinates(0, 0, 0)
   }
 
   println(endCoordinates)
@@ -40,31 +38,27 @@ object Day02 extends App {
   println(endCoordinates2)
   println(endCoordinates2.horizontal * endCoordinates2.vertical)
 
-
-}
-
-case class Coordinates(horizontal: Int, vertical: Int, aim: Int) {
+  case class Coordinates(horizontal: Int, vertical: Int, aim: Int) {
 
     def ++(other: Coordinates): Coordinates = {
 
-        Coordinates(
-            horizontal = horizontal + other.horizontal,
-            vertical = vertical + other.vertical,
-            aim = aim + other.aim
-        )
+      Coordinates(
+        horizontal = horizontal + other.horizontal,
+        vertical = vertical + other.vertical,
+        aim = aim + other.aim
+      )
 
     }
 
     def **(other: Coordinates): Coordinates = {
 
-        Coordinates(
-            horizontal = horizontal + other.horizontal,
-            vertical = vertical + (other.horizontal * aim),
-            aim = aim + other.vertical
-        )
+      Coordinates(
+        horizontal = horizontal + other.horizontal,
+        vertical = vertical + (other.horizontal * aim),
+        aim = aim + other.vertical
+      )
 
     }
 
-
-
+  }
 }
