@@ -46,7 +46,6 @@ object Day08 extends App {
         case (6, 2, 4) => inp -> 9
       }
     }.toMap
-
   }
 
   val result2: List[String] = inputs.map {
