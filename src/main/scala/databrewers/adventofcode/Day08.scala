@@ -27,56 +27,33 @@ object Day08 extends App {
 
   println(result1)
 
-
-
-  val result2: List[String] = inputs.map{
-      case List(left, right) => 
-        val lookupMap = findNumbers(left.split(" ").toList.map(_.sorted))
-        val numbers = right.split(" ").map( str => lookupMap(str.sorted)).mkString("")
-        numbers
-  }
-
-  // lengths:
-    /** 0 -> 6 ok
-     *  1 -> 2 ok
-     *  2 -> 5 ok
-     *  3 -> 5 ok
-     *  4 -> 4 ok
-     *  5 -> 5 ok
-     *  6 -> 6 ok
-     *  7 -> 3 ok
-     *  8 -> 7 ok
-     *  9 -> 6 ok
-     */
-
   def findNumbers(input: List[String]): Map[String, Int] = {
 
     val one = input.find(_.length == 2).get
     val four = input.find(_.length == 4).get
-    val seven = input.find(_.length == 3).get
-    val eight = input.find(_.length == 7).get
 
-    val nine = input.find(str => str.length == 6 && str.diff(four).length == 2 && str.diff(seven).length == 3).get
-    val six = input.find(str => str.length == 6 && str.diff(eight).length == 0 && seven.diff(str).length == 1).get
-    val zero = input.find(str => str.length == 6 && str != six && str != nine).get
+    input.map { inp =>
+      (inp.length, inp.intersect(one).length, inp.intersect(four).length) match {
+        case (6, 2, 3) => inp -> 0
+        case (2, 2, 2) => inp -> 1
+        case (5, 1, 2) => inp -> 2
+        case (5, 2, 3) => inp -> 3
+        case (4, 2, 4) => inp -> 4
+        case (5, 1, 3) => inp -> 5
+        case (6, 1, 3) => inp -> 6
+        case (3, _, _) => inp -> 7
+        case (7, _, _) => inp -> 8
+        case (6, 2, 4) => inp -> 9
+      }
+    }.toMap
 
-    val three = input.find(str => str.length == 5 && seven.diff(str).length == 0).get
-    val five = input.find(str => str.length == 5 && nine.diff(str) == one.diff(str)).get
-    val two = input.find(str => str.length == 5 && str != three && str != five).get
+  }
 
-
-    Map(
-      zero -> 0,
-      one -> 1,
-      two -> 2,
-      three -> 3,
-      four -> 4,
-      five -> 5,
-      six -> 6,
-      seven -> 7,
-      eight -> 8,
-      nine -> 9
-    )
+  val result2: List[String] = inputs.map {
+    case List(left, right) => {
+      val lookupMap = findNumbers(left.split(" ").toList.map(_.sorted))
+      right.split(" ").map(str => lookupMap(str.sorted)).mkString("")
+    }
   }
 
   println(result2.map(_.toInt).sum)
