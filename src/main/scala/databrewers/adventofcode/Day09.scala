@@ -10,7 +10,7 @@ object Day09 extends App {
     .getLines()
     .toList
 
-  val grid: Map[(Int, Int), Int] = (
+  val matrix: Map[(Int, Int), Int] = (
     for {
       i   <- lines.indices
       line = lines(i)
@@ -18,16 +18,60 @@ object Day09 extends App {
     } yield (j, i) -> line(j).toString.toInt
   ).toMap
 
-  val result1 = for {
-    ((x, y), value) <- grid
-    left             = grid.getOrElse((x - 1) -> y, Int.MaxValue)
-    right            = grid.getOrElse((x + 1) -> y, Int.MaxValue)
-    up               = grid.getOrElse(x -> (y - 1), Int.MaxValue)
-    down             = grid.getOrElse(x -> (y + 1), Int.MaxValue)
-  } yield
-    if (value < left && value < right && value < up && value < down) value + 1
-    else 0
+  def getNeighbours(coordinates: (Int, Int), grid: Map[(Int, Int), Int]): List[((Int, Int), Int)] = {
+    coordinates match {
+      case (x, y) =>
+        List(
+          grid.get((x - 1) -> y).map(value => ((x - 1) -> y) -> value),
+          grid.get((x + 1) -> y).map(value => ((x + 1) -> y) -> value),
+          grid.get(x -> (y - 1)).map(value => (x -> (y - 1)) -> value),
+          grid.get(x -> (y + 1)).map(value => (x -> (y + 1)) -> value)
+        ).flatten
+    }
+  }
 
-  println(result1.sum)
+  val lowest = (
+    for {
+      ((x, y), value) <- matrix.toList
+      neighbours       = getNeighbours((x, y), matrix)
+    } yield if (neighbours.forall(_._2 > value)) Some((x, y), value) else None
+  ).flatten
+
+  val result1 = lowest.map(_._2 + 1).sum
+  println(result1)
+
+  def getArea(
+      toVisit: List[(Int, Int)],
+      grid: Map[(Int, Int), Int],
+      area: Int = 0,
+      visited: List[(Int, Int)] = List.empty
+  ): (Int, List[(Int, Int)]) = {
+    toVisit match {
+      case Nil          => area -> visited
+      case head :: tail => {
+        val neighbours = getNeighbours(head, grid)
+        val newVisited = (head :: visited).distinct
+        val newToVisit = (neighbours.filter(_._2 < 9).map(_._1) ++ tail).distinct.diff(newVisited)
+        val newArea    = grid.get(head) match {
+          case Some(x) if x < 9 => area + 1
+          case _                => area
+        }
+        getArea(toVisit = newToVisit, grid = grid, area = newArea, visited = newVisited)
+      }
+    }
+  }
+
+  val areas = lowest.foldLeft(List.empty[Int] -> List.empty[(Int, Int)]) { case ((accumArea, accumVisited), (coords, _)) =>
+    coords match {
+      case _ if accumVisited.contains(coords) => accumArea -> accumVisited
+      case _                                  =>
+        val (area, visited) = getArea(toVisit = List(coords), grid = matrix, visited = accumVisited)
+        (area :: accumArea) -> (accumVisited ++ visited)
+    }
+  }
+
+  val result2 = areas._1.sorted.reverse.take(3).product
+
+  println(result2)
 
 }
