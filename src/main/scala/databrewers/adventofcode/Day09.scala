@@ -5,73 +5,66 @@ import scala.io.Source
 
 object Day09 extends App {
 
-  val lines: List[String] = Source
-    .fromResource(s"Day09.txt")
-    .getLines()
-    .toList
+  val grid: Grid = new Grid(
+    Source
+      .fromResource(s"Day09.txt")
+      .getLines()
+      .toList
+      .map(_.map(_.toString.toInt).toList)
+  )
 
-  val matrix: Map[(Int, Int), Int] = (
-    for {
-      i   <- lines.indices
-      line = lines(i)
-      j   <- line.indices
-    } yield (j, i) -> line(j).toString.toInt
-  ).toMap
+  case class Pos(x: Int, y: Int)
+  class Grid(private val heights: List[List[Int]]) {
 
-  def getNeighbours(coordinates: (Int, Int), grid: Map[(Int, Int), Int]): List[((Int, Int), Int)] = {
-    coordinates match {
-      case (x, y) =>
-        List(
-          grid.get((x - 1) -> y).map(value => ((x - 1) -> y) -> value),
-          grid.get((x + 1) -> y).map(value => ((x + 1) -> y) -> value),
-          grid.get(x -> (y - 1)).map(value => (x -> (y - 1)) -> value),
-          grid.get(x -> (y + 1)).map(value => (x -> (y + 1)) -> value)
-        ).flatten
+    private val xRange: Range = (0 until heights(0).size)
+    private val yRange: Range = (0 until heights.size)
+
+    private val height: Pos => Int =
+      pos => heights(pos.y)(pos.x)
+
+      
+    def heightOption: Pos => Option[Int]     = { pos =>
+      val withinRange: Range => Int => Boolean = (range: Range) => range.contains
+      val withinRanges: Pos => Boolean         = { pos => withinRange(xRange)(pos.x) && withinRange(yRange)(pos.y) }
+      Option(pos).filter(withinRanges).map(height)
     }
-  }
 
-  val lowest = (
-    for {
-      ((x, y), value) <- matrix.toList
-      neighbours       = getNeighbours((x, y), matrix)
-    } yield if (neighbours.forall(_._2 > value)) Some((x, y), value) else None
-  ).flatten
+    private val neighbours: Pos => List[Pos] = { pos =>
+      List(
+        (-1, 0),
+        (1, 0),
+        (0, -1),
+        (0, 1)
+      ).map { case (nx, ny) => Pos(pos.x + nx, pos.y + ny) }
+    }
 
-  val result1 = lowest.map(_._2 + 1).sum
-  println(result1)
+    def lowPoints: List[Pos] =
+      for {
+        x               <- xRange.toList
+        y               <- yRange
+        pos              = Pos(x, y)
+        neighbourHeights = neighbours(pos).flatMap(heightOption)
+        value            = height(pos)
+        if (neighbourHeights.forall(_ > value))
+      } yield pos
 
-  def getArea(
-      toVisit: List[(Int, Int)],
-      grid: Map[(Int, Int), Int],
-      area: Int = 0,
-      visited: List[(Int, Int)] = List.empty
-  ): (Int, List[(Int, Int)]) = {
-    toVisit match {
-      case Nil          => area -> visited
-      case head :: tail => {
-        val neighbours = getNeighbours(head, grid)
-        val newVisited = (head :: visited).distinct
-        val newToVisit = (neighbours.filter(_._2 < 9).map(_._1) ++ tail).distinct.diff(newVisited)
-        val newArea    = grid.get(head) match {
-          case Some(x) if x < 9 => area + 1
-          case _                => area
-        }
-        getArea(toVisit = newToVisit, grid = grid, area = newArea, visited = newVisited)
+    def result1: Int =
+      lowPoints.map(height).map(_ + 1).sum
+
+    def area(toCheck: List[Pos], accum: List[Pos]) = {
+      if(toCheck.isEmpty) accum
+      else {
+
       }
     }
+
+    def result2: Int = 
+      
+      ???
+      
+
   }
 
-  val areas = lowest.foldLeft(List.empty[Int] -> List.empty[(Int, Int)]) { case ((accumArea, accumVisited), (coords, _)) =>
-    coords match {
-      case _ if accumVisited.contains(coords) => accumArea -> accumVisited
-      case _                                  =>
-        val (area, visited) = getArea(toVisit = List(coords), grid = matrix, visited = accumVisited)
-        (area :: accumArea) -> (accumVisited ++ visited)
-    }
-  }
-
-  val result2 = areas._1.sorted.reverse.take(3).product
-
-  println(result2)
+  println(grid.result1)
 
 }
