@@ -26,7 +26,6 @@ object Day10 extends App {
 
   def matchBrackets(todo: List[Char], openBrackets: List[Char] = List.empty): Option[Char] = {
     (todo, openBrackets) match {
-      case (Nil, Nil)                                                    => None
       case (Nil, _)                                                      => None
       case ((head :: tail), _) if Set('(', '[', '{', '<').contains(head) => matchBrackets(tail, head :: openBrackets)
       case ((head :: tail), _)                                           =>
